@@ -37,8 +37,6 @@ const basicStrategy = new BasicStrategy((username, password, callback) => {
     });
 });
 
-passport.use(basicStrategy);
-
 const jwtStrategy = new JwtStrategy({
     secretOrKey: process.env.JWT_SECRET,
     // Look for the JWT as a Bearer auth header
@@ -51,5 +49,4 @@ const jwtStrategy = new JwtStrategy({
   }
 );
 
-passport.use(jwtStrategy);
-
+module.exports = {basicStrategy, jwtStrategy};

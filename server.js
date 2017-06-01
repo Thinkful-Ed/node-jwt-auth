@@ -6,7 +6,7 @@ const morgan = require('morgan');
 const passport = require('passport');
 
 const {router: usersRouter} = require('./users');
-const {router: authRouter} = require('./auth');
+const {router: authRouter, basicStrategy, jwtStrategy} = require('./auth');
 
 mongoose.Promise = global.Promise;
 
@@ -26,6 +26,8 @@ app.use(function (req, res, next) {
 });
 
 app.use(passport.initialize());
+passport.use(basicStrategy);
+passport.use(jwtStrategy);
 
 app.use('/api/users/', usersRouter);
 app.use('/api/auth/', authRouter);
@@ -37,7 +39,8 @@ app.get('/api/secret',
         return res.json({
             secret: 'rosebud'
         });
-    });
+    }
+);
 
 app.use('*', (req, res) => {
   return res.status(404).json({message: 'Not Found'});

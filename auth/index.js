@@ -1,5 +1,5 @@
 const {router} = require('./router');
-require('./strategies');
+const {basicStrategy, jwtStrategy} = require('./strategies');
 
-module.exports = {router};
+module.exports = {router, basicStrategy, jwtStrategy};
 
