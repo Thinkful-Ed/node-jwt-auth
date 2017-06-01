@@ -19,8 +19,7 @@ const basicStrategy = new BasicStrategy((username, password, callback) => {
       if (!user) {
         return Promise.reject({
           reason: 'LoginError',
-          message: 'Incorrect username',
-          location: 'username'
+          message: 'Incorrect username or password',
         });
       }
       return user.validatePassword(password);
@@ -29,8 +28,7 @@ const basicStrategy = new BasicStrategy((username, password, callback) => {
       if (!isValid) {
         return Promise.reject({
           reason: 'LoginError',
-          message: 'Incorrect password',
-          location: 'password'
+          message: 'Incorrect username or password',
         });
       }
       return callback(null, user)
