@@ -9,6 +9,7 @@ const {
 } = require('passport-jwt');
 
 const {User} = require('../users/models');
+const {JWT_SECRET} = require('../config');
 
 const basicStrategy = new BasicStrategy((username, password, callback) => {
   let user;
@@ -44,7 +45,7 @@ const basicStrategy = new BasicStrategy((username, password, callback) => {
 });
 
 const jwtStrategy = new JwtStrategy({
-    secretOrKey: process.env.JWT_SECRET,
+    secretOrKey: JWT_SECRET,
     // Look for the JWT as a Bearer auth header
     jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
     // Only allow HS256 tokens - the same as the ones we issue
