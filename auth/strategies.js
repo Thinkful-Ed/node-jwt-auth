@@ -1,8 +1,15 @@
 const passport = require('passport');
 const {BasicStrategy} = require('passport-http');
-const {Strategy: JwtStrategy, ExtractJwt} = require('passport-jwt');
+const {
+    // Assigns the Strategy export to the name JwtStrategy using object
+    // destructuring
+    // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assigning_to_new_variable_names
+    Strategy: JwtStrategy,
+    ExtractJwt
+} = require('passport-jwt');
 
 const {User} = require('../users/models');
+const {JWT_SECRET} = require('../config');
 
 const basicStrategy = new BasicStrategy((username, password, callback) => {
   let user;
@@ -11,10 +18,11 @@ const basicStrategy = new BasicStrategy((username, password, callback) => {
     .then(_user => {
       user = _user;
       if (!user) {
+        // Return a rejected promise so we break out of the chain of .thens.
+        // Any errors like this will be handled in the catch block.
         return Promise.reject({
           reason: 'LoginError',
-          message: 'Incorrect username',
-          location: 'username'
+          message: 'Incorrect username or password',
         });
       }
       return user.validatePassword(password);
@@ -23,8 +31,7 @@ const basicStrategy = new BasicStrategy((username, password, callback) => {
       if (!isValid) {
         return Promise.reject({
           reason: 'LoginError',
-          message: 'Incorrect password',
-          location: 'password'
+          message: 'Incorrect username or password',
         });
       }
       return callback(null, user)
@@ -37,10 +44,8 @@ const basicStrategy = new BasicStrategy((username, password, callback) => {
     });
 });
 
-passport.use(basicStrategy);
-
 const jwtStrategy = new JwtStrategy({
-    secretOrKey: process.env.JWT_SECRET,
+    secretOrKey: JWT_SECRET,
     // Look for the JWT as a Bearer auth header
     jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
     // Only allow HS256 tokens - the same as the ones we issue
@@ -51,5 +56,4 @@ const jwtStrategy = new JwtStrategy({
   }
 );
 
-passport.use(jwtStrategy);
-
+module.exports = {basicStrategy, jwtStrategy};
