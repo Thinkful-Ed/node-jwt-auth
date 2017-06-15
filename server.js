@@ -35,12 +35,12 @@ passport.use(jwtStrategy);
 app.use('/api/users/', usersRouter);
 app.use('/api/auth/', authRouter);
 
-// A secret endpoint which needs a valid JWT to access it
-app.get('/api/secret',
+// A protected endpoint which needs a valid JWT to access it
+app.get('/api/protected',
     passport.authenticate('jwt', {session: false}),
     (req, res) => {
         return res.json({
-            secret: 'rosebud'
+            data: 'rosebud'
         });
     }
 );
