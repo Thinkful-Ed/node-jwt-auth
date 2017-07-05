@@ -16,7 +16,7 @@ const expect = chai.expect;
 chai.use(chaiHttp);
 
 
-describe('Auth endpoints', function() {
+describe('Protected endpoint', function() {
   const username = 'exampleUser';
   const password = 'examplePass';
   const firstName = 'Example';
@@ -45,10 +45,10 @@ describe('Auth endpoints', function() {
     return User.remove({});
   });
 
-  describe('/api/secret', function() {
+  describe('/api/protected', function() {
     it('Should reject requests with no credentials', function() {
       return chai.request(app)
-        .get('/api/secret')
+        .get('/api/protected')
         .then(() => expect.fail(null, null, 'Request should not succeed'))
         .catch(err => {
           if (err instanceof chai.AssertionError) {
@@ -71,7 +71,7 @@ describe('Auth endpoints', function() {
       });
 
       return chai.request(app)
-        .get('/api/secret')
+        .get('/api/protected')
         .set('Authorization', `Bearer ${token}`)
         .then(() => expect.fail(null, null, 'Request should not succeed'))
         .catch(err => {
@@ -97,7 +97,7 @@ describe('Auth endpoints', function() {
       });
 
       return chai.request(app)
-        .get('/api/secret')
+        .get('/api/protected')
         .set('authorization', `Bearer ${token}`)
         .then(() => expect.fail(null, null, 'Request should not succeed'))
         .catch(err => {
@@ -109,7 +109,7 @@ describe('Auth endpoints', function() {
           expect(res).to.have.status(401);
         });
     });
-    it('Should send a secret', function() {
+    it('Should send protected data', function() {
       const token = jwt.sign({
         user: {
           username,
@@ -123,12 +123,12 @@ describe('Auth endpoints', function() {
       });
 
       return chai.request(app)
-        .get('/api/secret')
+        .get('/api/protected')
         .set('authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an('object');
-          expect(res.body.secret).to.equal('rosebud');
+          expect(res.body.data).to.equal('rosebud');
         });
     });
   });
