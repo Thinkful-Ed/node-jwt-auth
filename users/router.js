@@ -49,6 +49,9 @@ router.post('/', jsonParser, (req, res) => {
   }
 
   let {username, password, firstName, lastName} = req.body;
+  username = username.trim();
+  firstName = firstName.trim();
+  lastName = lastName.trim();
 
   return User
     .find({username})

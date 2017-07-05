@@ -279,6 +279,36 @@ describe('/api/user', function() {
             expect(passwordIsCorrect).to.be.true;
           });
       });
+      it('Should trim fields other than password', function() {
+        return chai.request(app)
+          .post('/api/users')
+          .send({
+            username: ` ${username} `,
+            password: ` ${password} `,
+            firstName: ` ${firstName} `,
+            lastName: ` ${lastName} `
+          })
+          .then(res => {
+            expect(res).to.have.status(201);
+            expect(res.body).to.be.an('object');
+            expect(res.body).to.have.keys('username', 'firstName', 'lastName');
+            expect(res.body.username).to.equal(username);
+            expect(res.body.firstName).to.equal(firstName);
+            expect(res.body.lastName).to.equal(lastName);
+            return User.findOne({
+              username
+            });
+          })
+          .then(user => {
+            expect(user).to.not.be.null;
+            expect(user.firstName).to.equal(firstName);
+            expect(user.lastName).to.equal(lastName);
+            return user.validatePassword(` ${password} `);
+          })
+          .then(passwordIsCorrect => {
+            expect(passwordIsCorrect).to.be.true;
+          });
+      });
     });
 
     describe('GET', function() {
