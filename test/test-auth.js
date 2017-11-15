@@ -65,7 +65,6 @@ describe('Auth endpoints', function () {
       return chai
         .request(app)
         .post('/api/auth/login')
-        .type('form')
         .send({ username: 'wrongUsername', password })        
         .then(() =>
           expect.fail(null, null, 'Request should not succeed')
@@ -83,7 +82,6 @@ describe('Auth endpoints', function () {
       return chai
         .request(app)
         .post('/api/auth/login')
-        .type('form')
         .send({ username, password: 'wrongPassword' })
         .then(() =>
           expect.fail(null, null, 'Request should not succeed')
@@ -101,7 +99,6 @@ describe('Auth endpoints', function () {
       return chai
         .request(app)
         .post('/api/auth/login')
-        .type('form')
         .send({ username, password })
         .then(res => {
           expect(res).to.have.status(200);

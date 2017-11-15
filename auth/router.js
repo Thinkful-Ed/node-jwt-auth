@@ -16,9 +16,9 @@ const createAuthToken = function(user) {
 };
 
 const localAuth = passport.authenticate('local', {session: false});
-const formParser = bodyParser.urlencoded({ extended: true });
+router.use(bodyParser.json());
 // The user provides a username and password to login
-router.post('/login', formParser, localAuth, (req, res) => {
+router.post('/login', localAuth, (req, res) => {
   const authToken = createAuthToken(req.user.apiRepr());
   res.json({authToken});
 });
