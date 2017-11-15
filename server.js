@@ -1,6 +1,5 @@
 'use strict';
 require('dotenv').config();
-const bodyParser = require('body-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
@@ -13,12 +12,12 @@ const passport = require('passport');
 // const { james: jimmy, robert: bobby } = actorSurnames;
 // console.log(jimmy); // Stewart - the variable name is jimmy, not james
 // console.log(bobby); // De Niro - the variable name is bobby, not robert
-const {router: usersRouter} = require('./users');
-const {router: authRouter, basicStrategy, jwtStrategy} = require('./auth');
+const { router: usersRouter } = require('./users');
+const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
 
 mongoose.Promise = global.Promise;
 
-const {PORT, DATABASE_URL} = require('./config');
+const { PORT, DATABASE_URL } = require('./config');
 
 const app = express();
 
@@ -26,7 +25,7 @@ const app = express();
 app.use(morgan('common'));
 
 // CORS
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE');
@@ -36,26 +35,23 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use(passport.initialize());
-passport.use(basicStrategy);
+passport.use(localStrategy);
 passport.use(jwtStrategy);
 
 app.use('/api/users/', usersRouter);
 app.use('/api/auth/', authRouter);
 
+const jwtAuth = passport.authenticate('jwt', { session: false });
+
 // A protected endpoint which needs a valid JWT to access it
-app.get(
-  '/api/protected',
-  passport.authenticate('jwt', {session: false}),
-  (req, res) => {
-    return res.json({
-      data: 'rosebud'
-    });
-  }
-);
+app.get('/api/protected', jwtAuth, (req, res) => {
+  return res.json({
+    data: 'rosebud'
+  });
+});
 
 app.use('*', (req, res) => {
-  return res.status(404).json({message: 'Not Found'});
+  return res.status(404).json({ message: 'Not Found' });
 });
 
 // Referenced by both runServer and closeServer. closeServer
@@ -64,7 +60,7 @@ let server;
 
 function runServer() {
   return new Promise((resolve, reject) => {
-    mongoose.connect(DATABASE_URL, {useMongoClient: true}, err => {
+    mongoose.connect(DATABASE_URL, { useMongoClient: true }, err => {
       if (err) {
         return reject(err);
       }
@@ -99,4 +95,4 @@ if (require.main === module) {
   runServer().catch(err => console.error(err));
 }
 
-module.exports = {app, runServer, closeServer};
+module.exports = { app, runServer, closeServer };
