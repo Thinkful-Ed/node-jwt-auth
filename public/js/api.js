@@ -11,8 +11,6 @@
  * 
  */
 
-
-
 function buildUrl(path, query) {
   var url = new URL(path, window.location.origin);
   if (query) {
@@ -96,7 +94,7 @@ var api = {
       },
     }).then(normalizeResponseErrors)
       .then(res => res.json());
-  },
+  }
 };
 
 

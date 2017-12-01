@@ -14,44 +14,31 @@
  * 
  * Rule of Thumb:
  * - Never manipulation DOM directly
- * - Never make fetch/AJAX calls directly
+ * - Never make fetch calls directly
  * - Updates to STATE/STORE allowed
  * 
  */
 
 // Make STORE global so it can be easily accessed in Dev Tools 
-var STORE;
+var STORE = {
+  view: null,      // signup | login | protected
+  protected: null, // will hold the results from /api/protected
+  token: localStorage.getItem('authToken'), // jwt token
+};
+
 //on document ready bind events
 jQuery(function ($) {
-
-  STORE = {
-    view: null,      // signup | login | protected
-    action: null,    // used to prevent superfluous refresh calls
-    token: localStorage.getItem('authToken'), // jwt token
-
-    // Simple token refresher
-    timer: {            // timer to track token expiration
-      status: null,     // current status: ok | warning | expired
-      warning: 60000,   // inactivity warning threshold in ms
-      remaining: null,  // calculated remaining until expire ms
-      polling: 1000,    // frequency to checkExpiry in ms
-    }
-  };
+  // attempt refresh token if user interacts with page
+  $('body').on('click', handle.refresh);
 
   // Setup all the event listeners, passing STATE and event to handlers
-  $('#signup').on('submit', STORE, handle.signup);
-  $('#login').on('submit', STORE, handle.login);
-  
-  $(document).on('click', '.viewLogin', STORE, handle.viewLogin);
-  $(document).on('click', '.viewSignup', STORE, handle.viewSignup);
-  $(document).on('click', '.viewProtected', STORE, handle.viewProtected);
+  $('#signup').on('submit', handle.signup);
+  $('#login').on('submit', handle.login);
 
-  $('body').on('click', STORE, handle.refresh); //keep token alive
+  $(document).on('click', '.viewLogin', handle.viewLogin);
+  $(document).on('click', '.viewSignup', handle.viewSignup);
+  $(document).on('click', '.viewProtected', handle.viewProtected);
 
-  // call checkExpiry once on document.ready
-  handle.checkExpiry(STORE);
-  // poll checkExpiry every few seconds to update status bar
-  setInterval(() => handle.checkExpiry(STORE), STORE.timer.polling);
-  
   $('.viewProtected').trigger('click');
+
 });
