@@ -1,5 +1,7 @@
 'use strict';
+
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
@@ -23,6 +25,9 @@ const app = express();
 
 // Logging
 app.use(morgan('common'));
+
+// Server Static
+app.use(express.static(path.join(__dirname, 'public')));
 
 // CORS
 app.use(function (req, res, next) {

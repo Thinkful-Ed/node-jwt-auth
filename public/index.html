@@ -1,0 +1,79 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<title>Home</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<style>
+		#signup,#login,#protected { display: none;}
+	</style>
+</head>
+
+<body>
+	<h2>API Client</h2>
+	<ul id="nav">
+		<li><a href="" class="viewSignup">SignUp</a> |</li>
+		<li><a href="" class="viewLogin">Login</a> |</li>
+		<li><a href="" class="viewProtected">Protected</a> |</li>
+	</ul>
+	<section id="statusbar">
+		Token:
+		<span class="message">None</span>
+	</section>
+	<form id="signup" class="view">
+		<fieldset>
+			<legend>Signup</legend>
+			<div>
+				<label for="username">Username</label>
+				<input type="text" name="username" value="bobuser">
+			</div>
+			<div>
+				<label for="password">Password</label>
+				<input type="password" name="password" value="knockknock">
+			</div>
+			<button type="submit">Signup</button> Already have an account?
+			<a href="" class="viewLogin">Login</a>
+		</fieldset>
+	</form>
+
+	<form id="login" class="view">
+		<fieldset>
+			<legend>Login</legend>
+			<div>
+				<label for="username">Username</label>
+				<input type="text" name="username" value="bobuser">
+			</div>
+			<div>
+				<label for="password">Password</label>
+				<input type="password" name="password" value="knockknock">
+			</div>
+			<button type="submit">Login</button> Don't have an account?
+			<a href="" class="viewSignup">Signup</a>
+		</fieldset>
+	</form>
+
+	<form id="protected" class="view">
+		<fieldset>
+			<legend>Protected</legend>
+			Secret: <span id="result"></span>
+		</fieldset>
+	</form>	
+
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+	 crossorigin="anonymous"></script>
+	<script>
+		window.jQuery || document.write('<script src="js/vendor/jquery-3.2.1.min.js"><\/script>')
+	</script>
+
+	<script src="js/fetch.js"></script>
+	<script src="js/render.js"></script>
+	<script src="js/handle.js"></script>
+	<script src="js/app.js"></script>
+</body>
+
+</html>

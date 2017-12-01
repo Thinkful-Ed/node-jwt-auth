@@ -1,0 +1,26 @@
+form, section {
+  margin-top: 10px;
+}
+label {
+  display: block;
+  display:inline-block;
+  width: 80px;
+}
+
+button, input[type=submit] {
+  height: 30px;
+  width: 100px;
+  background-color: lightblue;
+}
+
+button {
+  height: 30px;
+  width: 100px;
+  margin-left: 20px;
+  margin-top: 20px;
+  background-color: lightblue;
+}
+
+#nav li {
+  display: inline
+}
