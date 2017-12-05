@@ -18,7 +18,7 @@ const UserSchema = mongoose.Schema({
   lastName: {type: String, default: ''}
 });
 
-UserSchema.methods.apiRepr = function() {
+UserSchema.methods.serialize = function() {
   return {
     username: this.username || '',
     firstName: this.firstName || '',
