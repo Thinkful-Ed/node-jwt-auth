@@ -12,12 +12,12 @@ const passport = require('passport');
 // const { james: jimmy, robert: bobby } = actorSurnames;
 // console.log(jimmy); // Stewart - the variable name is jimmy, not james
 // console.log(bobby); // De Niro - the variable name is bobby, not robert
-const { router: usersRouter } = require('./users');
-const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
+const {router: usersRouter} = require('./users');
+const {router: authRouter, localStrategy, jwtStrategy} = require('./auth');
 
 mongoose.Promise = global.Promise;
 
-const { PORT, DATABASE_URL } = require('./config');
+const {PORT, DATABASE_URL} = require('./config');
 
 const app = express();
 
@@ -25,7 +25,7 @@ const app = express();
 app.use(morgan('common'));
 
 // CORS
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE');
@@ -41,7 +41,10 @@ passport.use(jwtStrategy);
 app.use('/api/users/', usersRouter);
 app.use('/api/auth/', authRouter);
 
-const jwtAuth = passport.authenticate('jwt', { session: false });
+const jwtAuth = passport.authenticate('jwt', {
+  session: false,
+  failWithError: true
+});
 
 // A protected endpoint which needs a valid JWT to access it
 app.get('/api/protected', jwtAuth, (req, res) => {
@@ -50,8 +53,29 @@ app.get('/api/protected', jwtAuth, (req, res) => {
   });
 });
 
-app.use('*', (req, res) => {
-  return res.status(404).json({ message: 'Not Found' });
+app.use('*', (req, res, next) => {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+app.use((err, req, res, next) => {
+  if (!err.status || err.status >= 500) {
+    return next(err);
+  }
+  res.status(err.status).json(
+    Object.assign({}, err, {
+      message: err.message
+    })
+  );
+});
+
+app.use((err, req, res, next) => {
+  console.error(err);
+
+  return res.status(req.status || 500).json({
+    message: 'Internal Server Error'
+  });
 });
 
 // Referenced by both runServer and closeServer. closeServer
@@ -59,16 +83,16 @@ app.use('*', (req, res) => {
 let server;
 
 function runServer(databaseUrl, port = PORT) {
-
   return new Promise((resolve, reject) => {
     mongoose.connect(databaseUrl, err => {
       if (err) {
         return reject(err);
       }
-      server = app.listen(port, () => {
-        console.log(`Your app is listening on port ${port}`);
-        resolve();
-      })
+      server = app
+        .listen(port, () => {
+          console.log(`Your app is listening on port ${port}`);
+          resolve();
+        })
         .on('error', err => {
           mongoose.disconnect();
           reject(err);
@@ -95,4 +119,4 @@ if (require.main === module) {
   runServer(DATABASE_URL).catch(err => console.error(err));
 }
 
-module.exports = { app, runServer, closeServer };
+module.exports = {app, runServer, closeServer};
