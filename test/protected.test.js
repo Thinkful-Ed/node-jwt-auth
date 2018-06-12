@@ -4,7 +4,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const jwt = require('jsonwebtoken');
 
-const { app, runServer, closeServer } = require('../server');
+const { app, connectToDb, disconnectDb } = require('../server');
 const { User } = require('../users');
 const { JWT_SECRET, TEST_DATABASE_URL } = require('../config');
 
@@ -21,12 +21,12 @@ describe('Protected endpoint', function () {
   const firstName = 'Example';
   const lastName = 'User';
 
-  before(function () {
-    return runServer(TEST_DATABASE_URL);
+  beforeAll(function () {
+    return connectToDb(TEST_DATABASE_URL);
   });
 
-  after(function () {
-    return closeServer();
+  afterAll(function () {
+    return disconnectDb();
   });
 
   beforeEach(function () {
