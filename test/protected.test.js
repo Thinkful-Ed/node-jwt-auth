@@ -1,19 +1,16 @@
 'use strict';
 
-const chai = require('chai');
-const chaiHttp = require('chai-http');
 const jwt = require('jsonwebtoken');
+const request = require('supertest');
 
 const { app, connectToDb, disconnectDb } = require('../server');
 const { User } = require('../users');
 const { JWT_SECRET, TEST_DATABASE_URL } = require('../config');
 
-const expect = chai.expect;
 
 // This let's us make HTTP requests
 // in our tests.
 // see: https://github.com/chaijs/chai-http
-chai.use(chaiHttp);
 
 describe('Protected endpoint', function () {
   const username = 'exampleUser';
@@ -32,20 +29,9 @@ describe('Protected endpoint', function () {
 
   describe('/api/protected', function () {
     it('Should reject requests with no credentials', function () {
-      return chai
-        .request(app)
+      return request(app)
         .get('/api/protected')
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
-          expect(res).to.have.status(401);
-        });
+        .expect(401);
     });
 
     it('Should reject requests with an invalid token', function () {
@@ -62,21 +48,10 @@ describe('Protected endpoint', function () {
         }
       );
 
-      return chai
-        .request(app)
+      return request(app)
         .get('/api/protected')
         .set('Authorization', `Bearer ${token}`)
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
-          expect(res).to.have.status(401);
-        });
+        .expect(401)
     });
     it('Should reject requests with an expired token', function () {
       const token = jwt.sign(
@@ -95,21 +70,10 @@ describe('Protected endpoint', function () {
         }
       );
 
-      return chai
-        .request(app)
+      return request(app)
         .get('/api/protected')
-        .set('authorization', `Bearer ${token}`)
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
-          expect(res).to.have.status(401);
-        });
+        .set('Authorization', `Bearer ${token}`)
+        .expect(401)
     });
     it('Should send protected data', function () {
       const token = jwt.sign(
@@ -128,14 +92,13 @@ describe('Protected endpoint', function () {
         }
       );
 
-      return chai
-        .request(app)
+      return request(app)
         .get('/api/protected')
-        .set('authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
-          expect(res).to.have.status(200);
-          expect(res.body).to.be.an('object');
-          expect(res.body.data).to.equal('rosebud');
+          expect(res.status).toEqual(200);
+          expect(res.body).toEqual(expect.any(Object));
+          expect(res.body.data).toEqual('rosebud');
         });
     });
   });
