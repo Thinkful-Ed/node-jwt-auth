@@ -29,20 +29,6 @@ describe('Protected endpoint', function () {
     return disconnectDb();
   });
 
-  beforeEach(function () {
-    return User.hashPassword(password).then(password =>
-      User.create({
-        username,
-        password,
-        firstName,
-        lastName
-      })
-    );
-  });
-
-  afterEach(function () {
-    return User.remove({});
-  });
 
   describe('/api/protected', function () {
     it('Should reject requests with no credentials', function () {
