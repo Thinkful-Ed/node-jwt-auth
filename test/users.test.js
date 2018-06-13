@@ -1,18 +1,9 @@
 'use strict';
 
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-
-const { app, runServer, closeServer } = require('../server');
+const request = require('supertest')
+const { app, connectToDb, disconnectDb } = require('../server');
 const { User } = require('../users');
 const { TEST_DATABASE_URL } = require('../config');
-
-const expect = chai.expect;
-
-// This let's us make HTTP requests
-// in our tests.
-// see: https://github.com/chaijs/chai-http
-chai.use(chaiHttp);
 
 describe('/api/user', function () {
   const username = 'exampleUser';
@@ -24,12 +15,12 @@ describe('/api/user', function () {
   const firstNameB = 'ExampleB';
   const lastNameB = 'UserB';
 
-  before(function () {
-    return runServer(TEST_DATABASE_URL);
+  beforeAll(function () {
+    return connectToDb(TEST_DATABASE_URL);
   });
 
-  after(function () {
-    return closeServer();
+  afterAll(function () {
+    return disconnectDb();
   });
 
   beforeEach(function () { });
@@ -41,56 +32,37 @@ describe('/api/user', function () {
   describe('/api/users', function () {
     describe('POST', function () {
       it('Should reject users with missing username', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             password,
             firstName,
             lastName
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal('Missing field');
-            expect(res.body.location).to.equal('username');
-          });
+          .then((res) => {
+            expect(res.status).toEqual(422)
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual('Missing field');
+            expect(res.body.location).toEqual('username');
+          })
       });
       it('Should reject users with missing password', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username,
             firstName,
             lastName
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal('Missing field');
-            expect(res.body.location).to.equal('password');
+          .then((res) => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual('Missing field');
+            expect(res.body.location).toEqual('password');
           });
       });
       it('Should reject users with non-string username', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username: 1234,
@@ -98,26 +70,18 @@ describe('/api/user', function () {
             firstName,
             lastName
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal(
+          .then((res) => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual(
               'Incorrect field type: expected string'
             );
-            expect(res.body.location).to.equal('username');
-          });
+            expect(res.body.location).toEqual('username');
+          }
+          )
       });
       it('Should reject users with non-string password', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username,
@@ -125,26 +89,17 @@ describe('/api/user', function () {
             firstName,
             lastName
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal(
+          .then(res => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual(
               'Incorrect field type: expected string'
             );
-            expect(res.body.location).to.equal('password');
+            expect(res.body.location).toEqual('password');
           });
       });
       it('Should reject users with non-string first name', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username,
@@ -152,26 +107,17 @@ describe('/api/user', function () {
             firstName: 1234,
             lastName
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal(
+          .then(res => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual(
               'Incorrect field type: expected string'
             );
-            expect(res.body.location).to.equal('firstName');
+            expect(res.body.location).toEqual('firstName');
           });
       });
       it('Should reject users with non-string last name', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username,
@@ -179,26 +125,17 @@ describe('/api/user', function () {
             firstName,
             lastName: 1234
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal(
+          .then(res => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual(
               'Incorrect field type: expected string'
             );
-            expect(res.body.location).to.equal('lastName');
+            expect(res.body.location).toEqual('lastName');
           });
       });
       it('Should reject users with non-trimmed username', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username: ` ${username} `,
@@ -206,26 +143,17 @@ describe('/api/user', function () {
             firstName,
             lastName
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal(
+          .then(res => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual(
               'Cannot start or end with whitespace'
             );
-            expect(res.body.location).to.equal('username');
+            expect(res.body.location).toEqual('username');
           });
       });
       it('Should reject users with non-trimmed password', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username,
@@ -233,26 +161,17 @@ describe('/api/user', function () {
             firstName,
             lastName
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal(
+          .then(res => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual(
               'Cannot start or end with whitespace'
             );
-            expect(res.body.location).to.equal('password');
+            expect(res.body.location).toEqual('password');
           });
       });
       it('Should reject users with empty username', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username: '',
@@ -260,26 +179,17 @@ describe('/api/user', function () {
             firstName,
             lastName
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal(
+          .then(res => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual(
               'Must be at least 1 characters long'
             );
-            expect(res.body.location).to.equal('username');
+            expect(res.body.location).toEqual('username');
           });
       });
       it('Should reject users with password less than ten characters', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username,
@@ -287,26 +197,17 @@ describe('/api/user', function () {
             firstName,
             lastName
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal(
+          .then(res => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual(
               'Must be at least 10 characters long'
             );
-            expect(res.body.location).to.equal('password');
+            expect(res.body.location).toEqual('password');
           });
       });
       it('Should reject users with password greater than 72 characters', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username,
@@ -314,21 +215,13 @@ describe('/api/user', function () {
             firstName,
             lastName
           })
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal(
+          .then(res => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual(
               'Must be at most 72 characters long'
             );
-            expect(res.body.location).to.equal('password');
+            expect(res.body.location).toEqual('password');
           });
       });
       it('Should reject users with duplicate username', function () {
@@ -341,33 +234,24 @@ describe('/api/user', function () {
         })
           .then(() =>
             // Try to create a second user with the same username
-            chai.request(app).post('/api/users').send({
+            request(app).post('/api/users').send({
               username,
               password,
               firstName,
               lastName
             })
           )
-          .then(() =>
-            expect.fail(null, null, 'Request should not succeed')
-          )
-          .catch(err => {
-            if (err instanceof chai.AssertionError) {
-              throw err;
-            }
-
-            const res = err.response;
-            expect(res).to.have.status(422);
-            expect(res.body.reason).to.equal('ValidationError');
-            expect(res.body.message).to.equal(
+          .then(res => {
+            expect(res.status).toEqual(422);
+            expect(res.body.reason).toEqual('ValidationError');
+            expect(res.body.message).toEqual(
               'Username already taken'
             );
-            expect(res.body.location).to.equal('username');
+            expect(res.body.location).toEqual('username');
           });
       });
       it('Should create a new user', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username,
@@ -376,33 +260,27 @@ describe('/api/user', function () {
             lastName
           })
           .then(res => {
-            expect(res).to.have.status(201);
-            expect(res.body).to.be.an('object');
-            expect(res.body).to.have.keys(
-              'username',
-              'firstName',
-              'lastName'
-            );
-            expect(res.body.username).to.equal(username);
-            expect(res.body.firstName).to.equal(firstName);
-            expect(res.body.lastName).to.equal(lastName);
+            expect(res.status).toEqual(201);
+            expect(res.body).toEqual(expect.any(Object));
+            expect(res.body).toHaveProperty('username', username);
+            expect(res.body).toHaveProperty('firstName', firstName);
+            expect(res.body).toHaveProperty('lastName', lastName);
             return User.findOne({
               username
             });
           })
           .then(user => {
-            expect(user).to.not.be.null;
-            expect(user.firstName).to.equal(firstName);
-            expect(user.lastName).to.equal(lastName);
+            expect(user).not.toBeNull();
+            expect(user.firstName).toEqual(firstName);
+            expect(user.lastName).toEqual(lastName);
             return user.validatePassword(password);
           })
           .then(passwordIsCorrect => {
-            expect(passwordIsCorrect).to.be.true;
+            expect(passwordIsCorrect).toBeTruthy();
           });
       });
       it('Should trim firstName and lastName', function () {
-        return chai
-          .request(app)
+        return request(app)
           .post('/api/users')
           .send({
             username,
@@ -411,34 +289,29 @@ describe('/api/user', function () {
             lastName: ` ${lastName} `
           })
           .then(res => {
-            expect(res).to.have.status(201);
-            expect(res.body).to.be.an('object');
-            expect(res.body).to.have.keys(
-              'username',
-              'firstName',
-              'lastName'
-            );
-            expect(res.body.username).to.equal(username);
-            expect(res.body.firstName).to.equal(firstName);
-            expect(res.body.lastName).to.equal(lastName);
+            expect(res.status).toEqual(201);
+            expect(res.body).toEqual(expect.any(Object));
+            expect(res.body).toHaveProperty('username', username)
+            expect(res.body).toHaveProperty('firstName', firstName)
+            expect(res.body).toHaveProperty('lastName', lastName)
             return User.findOne({
               username
             });
           })
           .then(user => {
-            expect(user).to.not.be.null;
-            expect(user.firstName).to.equal(firstName);
-            expect(user.lastName).to.equal(lastName);
+            expect(user).not.toBeNull();
+            expect(user.firstName).toEqual(firstName);
+            expect(user.lastName).toEqual(lastName);
           });
       });
     });
 
     describe('GET', function () {
       it('Should return an empty array initially', function () {
-        return chai.request(app).get('/api/users').then(res => {
-          expect(res).to.have.status(200);
-          expect(res.body).to.be.an('array');
-          expect(res.body).to.have.length(0);
+        return request(app).get('/api/users').then(res => {
+          expect(res.status).toEqual(200);
+          expect(res.body).toEqual(expect.any(Array));
+          expect(res.body).toHaveLength(0)
         });
       });
       it('Should return an array of users', function () {
@@ -456,17 +329,17 @@ describe('/api/user', function () {
             lastName: lastNameB
           }
         )
-          .then(() => chai.request(app).get('/api/users'))
+          .then(() => request(app).get('/api/users'))
           .then(res => {
-            expect(res).to.have.status(200);
-            expect(res.body).to.be.an('array');
-            expect(res.body).to.have.length(2);
-            expect(res.body[0]).to.deep.equal({
+            expect(res.status).toEqual(200);
+            expect(res.body).toEqual(expect.any(Array));
+            expect(res.body).toHaveLength(2);
+            expect(res.body[0]).toEqual({
               username,
               firstName,
               lastName
             });
-            expect(res.body[1]).to.deep.equal({
+            expect(res.body[1]).toEqual({
               username: usernameB,
               firstName: firstNameB,
               lastName: lastNameB
