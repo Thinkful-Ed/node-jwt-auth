@@ -9,17 +9,16 @@ const router = express.Router();
 const jsonParser = bodyParser.json();
 
 // Post to register a new user
-router.post('/', jsonParser, (req, res) => {
+router.post('/', jsonParser, (req, res, next) => {
   const requiredFields = ['username', 'password'];
   const missingField = requiredFields.find(field => !(field in req.body));
 
   if (missingField) {
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      message: 'Missing field',
-      location: missingField
-    });
+    const err = new Error('Missing field');
+    err.status = 422;
+    err.reason = 'ValidationError';
+    err.location = missingField;
+    return next(err);
   }
 
   const stringFields = ['username', 'password', 'firstName', 'lastName'];
@@ -28,12 +27,11 @@ router.post('/', jsonParser, (req, res) => {
   );
 
   if (nonStringField) {
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      message: 'Incorrect field type: expected string',
-      location: nonStringField
-    });
+    const err = new Error('Incorrect field type: expected string');
+    err.status = 422;
+    err.reason = 'ValidationError';
+    err.location = nonStringField;
+    return next(err);
   }
 
   // If the username and password aren't trimmed we give an error.  Users might
@@ -49,12 +47,11 @@ router.post('/', jsonParser, (req, res) => {
   );
 
   if (nonTrimmedField) {
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      message: 'Cannot start or end with whitespace',
-      location: nonTrimmedField
-    });
+    const err = new Error('Cannot start or end with whitespace');
+    err.status = 422;
+    err.reason = 'ValidationError';
+    err.location = nonTrimmedField;
+    return next(err);
   }
 
   const sizedFields = {
@@ -71,25 +68,24 @@ router.post('/', jsonParser, (req, res) => {
   const tooSmallField = Object.keys(sizedFields).find(
     field =>
       'min' in sizedFields[field] &&
-            req.body[field].trim().length < sizedFields[field].min
+      req.body[field].trim().length < sizedFields[field].min
   );
   const tooLargeField = Object.keys(sizedFields).find(
     field =>
       'max' in sizedFields[field] &&
-            req.body[field].trim().length > sizedFields[field].max
+      req.body[field].trim().length > sizedFields[field].max
   );
 
   if (tooSmallField || tooLargeField) {
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      message: tooSmallField
-        ? `Must be at least ${sizedFields[tooSmallField]
-          .min} characters long`
-        : `Must be at most ${sizedFields[tooLargeField]
-          .max} characters long`,
-      location: tooSmallField || tooLargeField
-    });
+    const err = new Error(
+      tooSmallField
+        ? `Must be at least ${sizedFields[tooSmallField].min} characters long`
+        : `Must be at most ${sizedFields[tooLargeField].max} characters long`
+    );
+    err.status = 422;
+    err.reason = 'ValidationError';
+    err.location = tooSmallField || tooLargeField;
+    return next(err);
   }
 
   let {username, password, firstName = '', lastName = ''} = req.body;
@@ -103,12 +99,12 @@ router.post('/', jsonParser, (req, res) => {
     .then(count => {
       if (count > 0) {
         // There is an existing user with the same username
-        return Promise.reject({
-          code: 422,
-          reason: 'ValidationError',
-          message: 'Username already taken',
-          location: 'username'
-        });
+        const err = new Error('Username already taken');
+        err.status = 422;
+        err.reason = 'ValidationError';
+        err.message = 'Username already taken';
+        err.location = 'username';
+        return Promise.reject(err);
       }
       // If there is no existing user, hash the password
       return User.hashPassword(password);
@@ -124,24 +120,17 @@ router.post('/', jsonParser, (req, res) => {
     .then(user => {
       return res.status(201).json(user.serialize());
     })
-    .catch(err => {
-      // Forward validation errors on to the client, otherwise give a 500
-      // error because something unexpected has happened
-      if (err.reason === 'ValidationError') {
-        return res.status(err.code).json(err);
-      }
-      res.status(500).json({code: 500, message: 'Internal server error'});
-    });
+    .catch(err => next(err));
 });
 
 // Never expose all your users like below in a prod application
 // we're just doing this so we have a quick way to see
 // if we're creating users. keep in mind, you can also
 // verify this in the Mongo shell.
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
   return User.find()
     .then(users => res.json(users.map(user => user.serialize())))
-    .catch(err => res.status(500).json({message: 'Internal server error'}));
+    .catch(err => next(err));
 });
 
 module.exports = {router};
