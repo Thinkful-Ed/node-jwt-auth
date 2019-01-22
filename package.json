@@ -7,6 +7,11 @@
     "start": "node server.js",
     "test": "mocha --exit"
   },
+  "prettier": {
+    "tabWidth": 2,
+    "singleQuote": true,
+    "bracketSpacing": false
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
