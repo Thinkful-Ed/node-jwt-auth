@@ -1,11 +1,13 @@
 {
   "name": "node-jwt-auth",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "mocha --exit"
+    "start": "node src/server.js",
+    "test": "mocha --require test/setup.js --watch",
+    "dev": "nodemon src/server.js",
+    "migrate": "postgrator --config postgrator-config.js"
   },
   "prettier": {
     "tabWidth": 2,
@@ -16,21 +18,31 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ajv": "^6.7.0",
+    "ajv-errors": "^1.0.1",
+    "bcrypt": "^3.0.3",
     "bcryptjs": "^2.4.0",
-    "body-parser": "^1.15.2",
+    "compression": "^1.7.3",
+    "cors": "^2.8.5",
     "dotenv": "^6.2.0",
     "express": "^4.14.0",
+    "express-validator": "^5.3.1",
+    "helmet": "^3.15.0",
     "jsonwebtoken": "^8.2.0",
-    "mongoose": "^5.0.6",
+    "knex": "^0.16.3",
     "morgan": "^1.7.0",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "pg": "^7.7.1",
+    "postgrator-cli": "^3.1.0"
   },
   "devDependencies": {
-    "chai": "^4.0.1",
+    "chai": "^4.2.0",
     "chai-http": "^4.2.1",
+    "supertest": "^3.3.0",
     "faker": "^4.1.0",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "nodemon": "^1.18.9"
   }
 }
