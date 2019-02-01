@@ -1,7 +1,7 @@
 -- Note the use of TEXT, not varchar or char(n)
 -- https://www.postgresql.org/docs/current/datatype-character.html
 CREATE TABLE blogful_users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id SERIAL PRIMARY KEY,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
@@ -16,4 +16,4 @@ CREATE TABLE blogful_users (
 
 ALTER TABLE blogful_articles
   ADD COLUMN
-    author_id UUID REFERENCES blogful_users ON DELETE SET NULL;
+    author_id INTEGER REFERENCES blogful_users ON DELETE SET NULL;

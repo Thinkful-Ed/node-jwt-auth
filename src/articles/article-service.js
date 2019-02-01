@@ -1,7 +1,7 @@
 
 const ArticleService = {
   getAll(db) {
-    return db.from('blogful_articles').select('*')
+    return db.from('blogful_articles').select('*');
   },
 
   // advanced version of above, uses single query to optimize
@@ -12,31 +12,7 @@ const ArticleService = {
         'art.id',
         'art.title',
         'art.date_published',
-        'art.content',
-        db.raw(
-          `COALESCE(
-            json_agg(DISTINCT tag) filter(WHERE tag.id IS NOT NULL),
-            '[]'
-          ) AS tags`
-        ),
-        db.raw(
-          `COALESCE(
-            json_agg(DISTINCT comm) filter(WHERE comm.id IS NOT NULL),
-            '[]'
-          ) AS comments`
-        ),
-      )
-      .leftJoin('blogful_articles_tags AS ba',
-        'art.id',
-        'ba.article_id',
-      )
-      .leftJoin('blogful_tags AS tag',
-        'ba.tag_id',
-        'tag.id',
-      )
-      .leftJoin('blogful_comments AS comm',
-        'art.id',
-        'comm.article_id',
+        'art.content'
       )
       .groupBy('art.id');
     /*
@@ -70,22 +46,8 @@ const ArticleService = {
   },
 
   getById(db, id) {
-    return Promise.all([
-      db.from('blogful_articles').select('*').where('id', id).first(),
-      ArticleService.getCommentsForArticle(db, id),
-      ArticleService.getTagsForArticle(db, id),
-    ]).then(([article, comments, tags]) => {
-      article.comments = comments;
-      article.tags = tags;
-      return article;
-    });
-  },
-
-  // uses advanced version of getAll
-  getByIdAdv(db, id) {
-    return ArticleService.getAllAdv(db)
-      .where('art.id', id)
-      .first();
+    return db.first('*').from('blogful_articles').where('id', id)
+      .then(article => article);
   },
 
   getCommentsForArticle(db, article_id) {

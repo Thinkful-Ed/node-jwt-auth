@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const UserService = require('../users/user-service');
-const { JWT_SECRET, JWT_EXPIRY } = require('../config');
+const { JWT_EXPIRY } = require('../config');
 
 const authRouter = express.Router();
 const jsonBodyParser = express.json({ limit: '50mb' });
@@ -38,7 +38,6 @@ const localAuth = (req, res, next) => {
 
 authRouter.route('/login')
   .post(jsonBodyParser, localAuth, (req, res, next) => {
-    // res.json(req.user);
     const user = req.user;
     const secret = process.env.JWT_SECRET;
     const token = jwt.sign({user}, secret, {

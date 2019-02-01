@@ -1,9 +1,18 @@
 const express = require('express');
 const path = require('path');
 const ArticleService = require('./article-service');
+const xss = require('xss');
 
 const articlesRouter = express.Router();
 const jsonBodyParser = express.json();
+
+const serializeArticle = article => ({
+  id: article.id,
+  title: xss(article.title),
+  content: xss(article.content),
+  date_published: article.date_published,
+  author_id: article.author_id
+});
 
 /* verbs for generic articles */
 articlesRouter
@@ -11,7 +20,7 @@ articlesRouter
   .get((req, res, next) => {
     ArticleService.getAll(req.app.get('db'))
       .then(articles => {
-        res.json(articles);
+        res.json(articles.map(serializeArticle));
       })
       .catch(next);
   })
@@ -35,7 +44,7 @@ articlesRouter
         res
           .status(201)
           .location(path.join(req.originalUrl, article.id))
-          .json(article);
+          .json(serializeArticle(article));
       });
   });
 
@@ -45,12 +54,12 @@ articlesRouter
   .all(checkArticleExists)
 
   .get((req, res, next) => {
-    ArticleService.getByIdAdv(
+    ArticleService.getById(
       req.app.get('db'),
       req.params.article_id
     )
-      .then(articles => {
-        res.json(articles);
+      .then(article => {
+        res.json(serializeArticle(article));
       })
       .catch(next);
   })

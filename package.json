@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "mocha --require test/setup.js --watch",
+    "test": "mocha --require test/setup.js --watch --bail",
     "dev": "nodemon src/server.js",
     "migrate": "postgrator --config postgrator-config.js"
   },
@@ -18,16 +18,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ajv": "^6.7.0",
-    "ajv-errors": "^1.0.1",
-    "bcrypt": "^3.0.3",
     "bcryptjs": "^2.4.0",
     "compression": "^1.7.3",
     "cors": "^2.8.5",
     "dotenv": "^6.2.0",
     "express": "^4.14.0",
-    "express-validator": "^5.3.1",
     "helmet": "^3.15.0",
+    "http-errors": "^1.7.1",
     "jsonwebtoken": "^8.2.0",
     "knex": "^0.16.3",
     "morgan": "^1.7.0",
@@ -35,7 +32,9 @@
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "pg": "^7.7.1",
-    "postgrator-cli": "^3.1.0"
+    "postgrator-cli": "^3.1.0",
+    "validator": "^10.11.0",
+    "xss": "^1.0.3"
   },
   "devDependencies": {
     "chai": "^4.2.0",
