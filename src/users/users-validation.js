@@ -1,6 +1,6 @@
 var validator = require('validator');
 const createError = require('http-errors');
-const UserService = require('./user-service');
+const UserService = require('./users-service');
 
 exports.validateUser = (req, res, next) => {
   const { email, password } = req.body;
@@ -10,7 +10,6 @@ exports.validateUser = (req, res, next) => {
 
   const missingFields = requiredFields.filter(field => !(field in req.body));
   if (missingFields.length) {
-    console.log(123)
     const err = createError(400, 'Missing fields', {
       type: 'ValidationError',
       prop: missingFields

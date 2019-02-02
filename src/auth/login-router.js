@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-const UserService = require('../users/user-service');
+const UserService = require('../users/users-service');
 const { JWT_EXPIRY } = require('../config');
 
 const authRouter = express.Router();

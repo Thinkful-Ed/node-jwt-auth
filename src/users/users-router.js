@@ -1,8 +1,8 @@
+const path = require('path');
 const express = require('express');
-const url = require('url');
-const UserService = require('./user-service');
+const UserService = require('./users-service');
 
-const { validateUser } = require('./user-validation');
+const { validateUser } = require('./users-validation');
 
 const usersRouter = express.Router();
 const jsonBodyParser = express.json({ limit: '50mb' });
@@ -18,9 +18,12 @@ usersRouter.route('/')
       screen_name,
       password
     };
+
     return UserService.insertUser(req.app.get('db'), newUser)
       .then(user => {
-        res.status(201).location(`${req.originalUrl}/${user.id}`).json(user);
+        res.status(201)
+          .location(path.posix.join(req.originalUrl, user.id.toString()))
+          .json(user);
       })
       .catch(next);
   });

@@ -21,8 +21,8 @@ app.use(compression());
 app.use(cors());
 app.use(helmet());
 
-app.use('/api/auth', loginRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/auth', loginRouter);
 app.use('/api/articles', jwtAuth, articlesRouter);
 
 app.get('/', (req, res) => {
@@ -36,8 +36,7 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   if (err instanceof createError.HttpError) {
-    const errBody = Object.assign({}, err, { message: err.message });
-    return res.status(err.status).json(errBody);
+    return res.status(err.status).json({ message: err.message, err });
   }
   next(err);
 });
@@ -45,9 +44,8 @@ app.use((err, req, res, next) => {
 app.use((error, req, res, next) => {
   let response;
   if (NODE_ENV === 'production') {
-    response = { error: 'server error' };
+    response = { message: 'Internal Server Error' };
   } else {
-    console.error(error);
     response = { message: error.message, error };
   }
   res.status(500).json(response);

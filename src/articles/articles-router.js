@@ -43,7 +43,7 @@ articlesRouter
       .then(article => {
         res
           .status(201)
-          .location(path.join(req.originalUrl, article.id))
+          .location(path.posix.join(req.originalUrl, article.id.toString()))
           .json(serializeArticle(article));
       });
   });
