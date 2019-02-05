@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../config');
 
 function jwtAuth(req, res, next) {
   const auth = req.header('Authorization');
-  const secret = process.env.JWT_SECRET;
+  const secret = JWT_SECRET;
 
   if (!auth) {
     return res.status(401).json({

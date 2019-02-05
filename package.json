@@ -9,7 +9,7 @@
     "dev": "nodemon src/server.js",
     "migrate": "postgrator --config postgrator-config.js",
     "migrate-test": "DB_NAME=listful_test postgrator --config postgrator-config.js",
-    "seed": "psql -U devUser -d listful -f ./seeds/seed.listful_items_users.sql"
+    "seed": "psql -d listful -f ./seeds/seed.listful_items_users.sql"
   },
   "prettier": {
     "tabWidth": 2,

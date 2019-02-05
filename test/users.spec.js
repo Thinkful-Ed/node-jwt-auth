@@ -1,11 +1,10 @@
-/* global supertest */
-
+const supertest = require('supertest');
 const { expect } = require('chai');
 const knex = require('knex');
 const app = require('../src/app');
 const bcrypt = require('bcryptjs');
 
-describe('Noteful API - Users', function () {
+describe.skip('Noteful API - Users', function () {
   const first_name = 'Test';
   const last_name = 'User';
   const screen_name = 'Test User';

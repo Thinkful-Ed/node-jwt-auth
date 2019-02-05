@@ -1,23 +1,27 @@
-/* global supertest */
-
-const { expect } = require('chai');
 const knex = require('knex');
+const jwt = require('jsonwebtoken');
+const supertest = require('supertest');
+const { expect } = require('chai');
+
 const app = require('../src/app');
-const { signToken } = require('../src/helpers/jwt-helper');
 const { makeUsers } = require('./users.fixtures');
-const { makeUserItems, makeMaliciousItems } = require('./items.fixtures');
-const secret = process.env.JWT_SECRET;
-const expiry = require('../src/config').JWT_EXPIRY;
+const { makeUserItems, makeMaliciousItem } = require('./items.fixtures');
+const { JWT_EXPIRY, JWT_SECRET } = require('../src/config');
 
 describe('Items Endpoints', function () {
-  let db, token;
+  let db;
+  const users = makeUsers(2);
 
-  const cleanTableSet = () => {
-    return db('listful_items').del()
-      .then(() => {
-        return db('listful_users').del();
-      });
-  };
+  const userFoo = users[0]; // user with items
+  const userBar = users[1]; // user without items
+
+  const userFooItems = makeUserItems(userFoo);
+  const { maliciousItem, expectedItem } = makeMaliciousItem(userFoo);
+
+  const token = jwt.sign({ user: userFoo }, JWT_SECRET, {
+    subject: userFoo.username,
+    expiresIn: JWT_EXPIRY
+  });
 
   before('make knex instance', () => {
     db = knex({
@@ -25,20 +29,25 @@ describe('Items Endpoints', function () {
       connection: process.env.TEST_DB_URL,
     });
     app.set('db', db);
-
-    token = signToken({
-      username: 'test'
-    }, secret, expiry);
   });
 
-  before('clean the table', cleanTableSet);
+  beforeEach('seed users', () => {
+    return db
+      .insert(users)
+      .into('listful_users');
+  });
 
-  afterEach('cleanup', cleanTableSet);
+  afterEach('cleanup', () => {
+    return db('listful_items').del()
+      .then(() => db('listful_users').del());
+  });
 
-  after('disconnect from db', () => db.destroy());
+  after('disconnect', () => db.destroy());
 
   describe('GET /api/items', () => {
+
     context('Given no items and no authorization JWT', () => {
+
       it('responds with 401', () => {
         return supertest(app)
           .get('/api/items')
@@ -47,49 +56,43 @@ describe('Items Endpoints', function () {
             expect(res.body.error.message).to.eql("No 'Authorization' header found");
           });
       });
+
     });
 
     context('Given no items with valid authorization JWT', () => {
+
       it('responds with 200 and an empty list', () => {
         return supertest(app)
           .get('/api/items')
           .set('Authorization', `Bearer ${token}`)
           .expect(200, []);
       });
+
     });
 
     context('Given items belonging to authorized user', () => {
-      const testUsers = makeUsers();
-      const testItems = makeUserItems(testUsers);
 
-      beforeEach('insert users and items', () => {
+      beforeEach('seed items', () => {
         return db
-          .into('listful_users')
-          .insert(testUsers)
-          .then(() => db
-            .into('listful_items')
-            .insert(testItems));
+          .insert(userFooItems)
+          .into('listful_items');
       });
 
       it('responds with 200 and all of the items', () => {
         return supertest(app)
           .get('/api/items')
           .set('Authorization', `Bearer ${token}`)
-          .expect(200, testItems);
+          .expect(200, userFooItems);
       });
+
     });
 
     context('Given an XSS compromised item', () => {
-      const testUsers = makeUsers();
-      const { maliciousItems, expectedItems } = makeMaliciousItems();
 
       beforeEach('insert users and malicious items', () => {
         return db
-          .into('listful_users')
-          .insert(testUsers)
-          .then(() => db
-            .into('listful_items')
-            .insert(maliciousItems));
+          .insert(maliciousItem)
+          .into('listful_items');
       });
 
       it('removes XSS attack content', () => {
@@ -98,8 +101,8 @@ describe('Items Endpoints', function () {
           .set('Authorization', `Bearer ${token}`)
           .expect(200)
           .expect(res => {
-            expect(res.body[0].name).to.eql(expectedItems[0].name);
-            expect(res.body[0].description).to.eql(expectedItems[0].description);
+            expect(res.body[0].name).to.eql(expectedItem.name);
+            expect(res.body[0].description).to.eql(expectedItem.description);
           });
       });
     });
@@ -113,7 +116,10 @@ describe('Items Endpoints', function () {
       it('responds with 401', () => {
         return supertest(app)
           .get(`/api/items/${badItemId}`)
-          .expect(401, '');
+          .expect(401)
+          .expect(res => {
+            expect(res.body.error.message).to.eql("No 'Authorization' header found");
+          });
       });
     });
 
@@ -122,54 +128,44 @@ describe('Items Endpoints', function () {
         return supertest(app)
           .get(`/api/items/${badItemId}`)
           .set('Authorization', `Bearer ${token}`)
-          .expect(404, { error: { message: 'Item does not exist' } });
+          .expect(res => {
+            expect(res.body.error.message).to.eql('Item does not exist');
+          });
       });
     });
 
     context('Given items belonging to authorized user', () => {
-      const testUsers = makeUsers();
-      const testItems = makeUserItems(testUsers);
-
       beforeEach('insert items', () => {
         return db
-          .into('listful_users')
-          .insert(testUsers)
-          .then(() => db
-            .into('listful_items')
-            .insert(testItems));
+          .insert(userFooItems)
+          .into('listful_items');
       });
 
       it('responds with 200 and the specified item', () => {
-        const articleId = 2;
-        const expectedArticle = testItems[articleId - 1];
+        const item = userFooItems[0];
         return supertest(app)
-          .get(`/api/items/${articleId}`)
+          .get(`/api/items/${item.id}`)
           .set('Authorization', `Bearer ${token}`)
-          .expect(200, expectedArticle);
+          .expect(200, item);
       });
     });
 
     context('Given an XSS attack article', () => {
-      const testUsers = makeUsers();
-      const { maliciousItems, expectedItems } = makeMaliciousItems();
 
       beforeEach('insert users and malicious items', () => {
         return db
-          .into('listful_users')
-          .insert(testUsers)
-          .then(() => db
-            .into('listful_items')
-            .insert(maliciousItems));
+          .insert(maliciousItem)
+          .into('listful_items');
       });
 
       it('removes XSS attack content', () => {
         return supertest(app)
-          .get(`/api/items/${maliciousItems[0].id}`)
+          .get(`/api/items/${maliciousItem.id}`)
           .set('Authorization', `Bearer ${token}`)
           .expect(200)
           .expect(res => {
-            expect(res.body[0].name).to.eql(expectedItems[0].name);
-            expect(res.body[0].description).to.eql(expectedItems[0].description);
+            expect(res.body.name).to.eql(expectedItem.name);
+            expect(res.body.description).to.eql(expectedItem.description);
           });
       });
     });

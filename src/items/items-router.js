@@ -13,11 +13,10 @@ const serialize = item => ({
   name: xss(item.name),
   description: xss(item.description),
   date_published: item.date_published,
-  author_id: item.author_id
+  user_id: item.user_id
 });
 
-itemsRouter
-  .route('/')
+itemsRouter.route('/')
   .get((req, res, next) => {
     ItemService.getAll(req.app.get('db'), req.user.id)
       .then(items => {
@@ -60,8 +59,7 @@ itemsRouter
       });
   });
 
-itemsRouter
-  .route('/:item_id/')
+itemsRouter.route('/:item_id/')
   .get((req, res, next) => {
     ItemService.getById(
       req.app.get('db'),
@@ -72,7 +70,7 @@ itemsRouter
         if (item) {
           res.json(serialize(item));
         } else {
-          const err = createError(404, 'Not Found');
+          const err = createError(404, 'Item does not exist');
           return next(err);
         }
       })
