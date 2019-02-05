@@ -10,9 +10,9 @@ const compression = require('compression');
 const { NODE_ENV } = require('./config');
 const usersRouter = require('./users/users-router');
 const loginRouter = require('./auth/login-router');
-const jwtAuth = require('./middleware/jwt-auth-custom');
+const authJWT = require('./auth/auth-jwt');
 
-const articlesRouter = require('./articles/articles-router');
+const itemsRouter = require('./items/items-router');
 
 const app = express();
 
@@ -23,7 +23,7 @@ app.use(helmet());
 
 app.use('/api/users', usersRouter);
 app.use('/api/auth', loginRouter);
-app.use('/api/articles', jwtAuth, articlesRouter);
+app.use('/api/items', authJWT, itemsRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello, world!');

@@ -3,10 +3,10 @@ const createError = require('http-errors');
 const UserService = require('./users-service');
 
 exports.validateUser = (req, res, next) => {
-  const { email, password } = req.body;
-  const requiredFields = ['first_name', 'last_name', 'email', 'screen_name', 'password'];
-  const stringFields = ['first_name', 'last_name', 'email', 'screen_name', 'password'];
-  const trimmedFields = ['screen_name', 'password'];
+  const { username, password } = req.body;
+  const requiredFields = ['fullname', 'username', 'password'];
+  const stringFields = ['fullname', 'username', 'password'];
+  const trimmedFields = ['username', 'password'];
 
   const missingFields = requiredFields.filter(field => !(field in req.body));
   if (missingFields.length) {
@@ -36,13 +36,13 @@ exports.validateUser = (req, res, next) => {
     return next(err);
   }
 
-  if (!validator.isEmail(email)) {
-    const err = createError(400, 'Please provide a valid email address', {
-      type: 'ValidationError',
-      prop: 'email'
-    });
-    return next(err);
-  }
+  // if (!validator.isEmail(username)) {
+  //   const err = createError(400, 'Please provide a valid email address', {
+  //     type: 'ValidationError',
+  //     prop: 'email'
+  //   });
+  //   return next(err);
+  // }
 
   if (!validator.isLength(password, { min: 8, max: 72 })) {
     const err = createError(400, 'Password must a between 8 and 72 characters', {
@@ -52,12 +52,12 @@ exports.validateUser = (req, res, next) => {
     return next(err);
   }
 
-  UserService.hasUserWithEmail(req.app.get('db'), email)
-    .then(hasUserWithEmail => {
-      if (hasUserWithEmail) {
-        const err = createError(409, 'Email address already taken', {
+  UserService.hasUser(req.app.get('db'), username)
+    .then(exists => {
+      if (exists) {
+        const err = createError(409, 'Username already taken', {
           type: 'ValidationError',
-          prop: 'email'
+          prop: 'username'
         });
         return next(err);
       }

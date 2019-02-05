@@ -15,7 +15,7 @@ describe('Noteful API - Users', function () {
   let db;
 
   const cleanTableSet = () => {
-    return db('blogful_articles').del()
+    return db('blogful_items').del()
       .then(() => {
         return db('blogful_users').del();
       });

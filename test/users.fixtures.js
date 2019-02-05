@@ -1,46 +1,21 @@
-function makeUsersArray() {
-  return [
-    {
-      id: 500,
-      first_name: 'Bodeep',
-      last_name: 'Deboop',
-      email: 'b.deboop@dunder-mifflin.com',
-      screen_name: 'bodeepadeboop',
-      password: 'p@ssw0rd!'
-    },
-    {
-      id: 501,
-      first_name: 'Joe',
-      last_name: 'Bloggs',
-      email: 'j.bloggs@dunder-mifflin.com',
-      screen_name: 'j.b',
-      password: 'p@ssw0rd!'
-    },
-    {
-      id: 502,
-      first_name: 'Sam',
-      last_name: 'Smith',
-      email: 's.smith@dunder-mifflin.com',
-      screen_name: 'smiddy',
-      password: 'p@ssw0rd!'
-    },
-    {
-      id: 503,
-      first_name: 'Alex',
-      last_name: 'Taylor',
-      email: 'a.tay@dunder-mifflin.com',
-      screen_name: 'lexlor',
-      password: 'p@ssw0rd!'
-    },
-    {
-      id: 504,
-      first_name: 'Peng',
-      last_name: 'Won In',
-      email: 'wip@dunder-mifflin.com',
-      screen_name: 'wippy',
-      password: 'p@ssw0rd!'
-    }
-  ];
+const faker = require('faker');
+
+const PASSWORD = 'P@ssw0rd!';
+
+function makeUsers(num = 5) {
+  let USER_INDEX = 1;
+  const users = [];
+  for (let i = 0; i < num; i++) {
+    const user = {
+      id: 1000 + i,
+      fullname: `${faker.name.firstName()} ${faker.name.lastName()}`,
+      username: `${faker.internet.userName()}__${USER_INDEX}`,
+      password: PASSWORD
+    };
+    users.push(user);
+  }
+
+  return users;
 }
 
-module.exports = { makeUsersArray };
+module.exports = { makeUsers };
