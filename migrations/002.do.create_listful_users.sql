@@ -6,7 +6,7 @@ CREATE TABLE listful_users (
     fullname TEXT NOT NULL,
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
-    date_published TIMESTAMP DEFAULT now() NOT NULL
+    created_at TIMESTAMP DEFAULT now() NOT NULL
 );
 
 ALTER TABLE listful_items

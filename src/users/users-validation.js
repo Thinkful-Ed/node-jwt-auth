@@ -36,13 +36,13 @@ exports.validateUser = (req, res, next) => {
     return next(err);
   }
 
-  // if (!validator.isEmail(username)) {
-  //   const err = createError(400, 'Please provide a valid email address', {
-  //     type: 'ValidationError',
-  //     prop: 'email'
-  //   });
-  //   return next(err);
-  // }
+  if (!validator.isEmail(username)) {
+    const err = createError(400, 'Username should be a valid email address', {
+      type: 'ValidationError',
+      prop: 'email'
+    });
+    return next(err);
+  }
 
   if (!validator.isLength(password, { min: 8, max: 72 })) {
     const err = createError(400, 'Password must a between 8 and 72 characters', {

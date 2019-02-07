@@ -12,14 +12,13 @@ describe('Items Endpoints', function () {
   let db;
   const users = makeUsers(2);
 
-  const userFoo = users[0]; // user with items
-  const userBar = users[1]; // user without items
+  const user = users[0]; // user with items
 
-  const userFooItems = makeUserItems(userFoo);
-  const { maliciousItem, expectedItem } = makeMaliciousItem(userFoo);
+  const userFooItems = makeUserItems(user);
+  const { maliciousItem, expectedItem } = makeMaliciousItem(user);
 
-  const token = jwt.sign({ user: userFoo }, JWT_SECRET, {
-    subject: userFoo.username,
+  const token = jwt.sign({ user: user }, JWT_SECRET, {
+    subject: user.username,
     expiresIn: JWT_EXPIRY
   });
 
@@ -99,13 +98,11 @@ describe('Items Endpoints', function () {
         return supertest(app)
           .get('/api/items')
           .set('Authorization', `Bearer ${token}`)
-          .expect(200)
-          .expect(res => {
-            expect(res.body[0].name).to.eql(expectedItem.name);
-            expect(res.body[0].description).to.eql(expectedItem.description);
-          });
+          .expect(200, [expectedItem]);
       });
     });
+
+
   });
 
   describe('GET /api/items/:item_id', () => {
@@ -162,11 +159,7 @@ describe('Items Endpoints', function () {
         return supertest(app)
           .get(`/api/items/${maliciousItem.id}`)
           .set('Authorization', `Bearer ${token}`)
-          .expect(200)
-          .expect(res => {
-            expect(res.body.name).to.eql(expectedItem.name);
-            expect(res.body.description).to.eql(expectedItem.description);
-          });
+          .expect(200, expectedItem);
       });
     });
   });

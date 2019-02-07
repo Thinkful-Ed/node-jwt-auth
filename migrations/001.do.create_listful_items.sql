@@ -3,5 +3,5 @@ CREATE TABLE listful_items (
     name TEXT NOT NULL,
     description TEXT,
     checked BOOLEAN DEFAULT false NOT NULL,
-    date_published TIMESTAMP DEFAULT now() NOT NULL
+    created_at TIMESTAMP DEFAULT now() NOT NULL
 );

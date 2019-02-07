@@ -16,7 +16,9 @@ const itemsRouter = require('./items/items-router');
 
 const app = express();
 
-app.use(morgan('dev'));
+app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'common', {
+  skip: () => process.env.NODE_ENV === 'test'
+}));
 app.use(compression());
 app.use(cors());
 app.use(helmet());

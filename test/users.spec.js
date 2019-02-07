@@ -4,19 +4,17 @@ const knex = require('knex');
 const app = require('../src/app');
 const bcrypt = require('bcryptjs');
 
-describe.skip('Noteful API - Users', function () {
-  const first_name = 'Test';
-  const last_name = 'User';
-  const screen_name = 'Test User';
-  const email = 'testuser@example.com';
+describe('Noteful API - Users', function () {
+  const fullname = 'Test User';
+  const username = 'testuser@example.com';
   const password = 'password';
 
   let db;
 
   const cleanTableSet = () => {
-    return db('blogful_items').del()
+    return db('listful_items').del()
       .then(() => {
-        return db('blogful_users').del();
+        return db('listful_users').del();
       });
   };
 
@@ -39,23 +37,19 @@ describe.skip('Noteful API - Users', function () {
     it('Should create a new user', function () {
       return supertest(app)
         .post('/api/users')
-        .send({ first_name, last_name, screen_name, email, password })
+        .send({ fullname, username, password })
         .expect(201)
         .then(_res => {
           res = _res;
-          expect(res.body.first_name).to.equal(first_name);
-          expect(res.body.last_name).to.equal(last_name);
-          expect(res.body.screen_name).to.equal(screen_name);
-          expect(res.body.email).to.equal(email);
-          return db('blogful_users').first('*').where({ id: res.body.id });
+          expect(res.body.fullname).to.equal(fullname);
+          expect(res.body.username).to.equal(username);
+          return db('listful_users').first('*').where({ id: res.body.id });
         })
         .then(user => {
           expect(user).to.exist;
           expect(user.id).to.equal(res.body.id);
-          expect(user.first_name).to.equal(first_name);
-          expect(user.last_name).to.equal(last_name);
-          expect(user.screen_name).to.equal(screen_name);
-          expect(user.email).to.equal(email);
+          expect(user.fullname).to.equal(fullname);
+          expect(user.username).to.equal(username);
           return bcrypt.compare(password, user.password);
         })
         .then(isValid => {
@@ -66,7 +60,7 @@ describe.skip('Noteful API - Users', function () {
     it('Should reject users with missing username', function () {
       return supertest(app)
         .post('/api/users')
-        .send({ first_name, last_name, screen_name, password })
+        .send({ fullname, password })
         .expect(400)
         .then(res => {
           expect(res.body.message).to.equal('Missing fields');
@@ -76,7 +70,7 @@ describe.skip('Noteful API - Users', function () {
     it('Should reject users with missing password', function () {
       return supertest(app)
         .post('/api/users')
-        .send({ first_name, last_name, screen_name, email })
+        .send({ fullname, username })
         .expect(400)
         .then(res => {
           expect(res.body.message).to.equal('Missing fields');
@@ -86,7 +80,7 @@ describe.skip('Noteful API - Users', function () {
     it('Should reject users with non-string username', function () {
       return supertest(app)
         .post('/api/users')
-        .send({ first_name, last_name, screen_name, email: 123456, password })
+        .send({ fullname, username: 12345678, password })
         .expect(400)
         .then(res => {
           expect(res.body.message).to.equal('Incorrect field type: expected string');
@@ -96,47 +90,47 @@ describe.skip('Noteful API - Users', function () {
     it('Should reject users with non-string password', function () {
       return supertest(app)
         .post('/api/users')
-        .send({ first_name, last_name, screen_name, email, password: 123456 })
+        .send({ fullname, username, password: 12345678 })
         .expect(400)
         .then(res => {
           expect(res.body.message).to.equal('Incorrect field type: expected string');
         });
     });
 
-    it('Should reject users with an invalid email address', function () {
+    it('Should reject users with an invalid username address', function () {
       return supertest(app)
         .post('/api/users')
-        .send({ first_name, last_name, screen_name, email: ` ${email} `, password })
-        .expect(400)
-        .then(res => {
-          expect(res.body.message).to.equal('Please provide a valid email address');
-        });
-    });
-
-    it('Should reject users with non-trimmed password', function () {
-      return supertest(app)
-        .post('/api/users')
-        .send({ first_name, last_name, screen_name, email, password: ` ${password}` })
+        .send({ fullname, username: ` ${username} `, password })
         .expect(400)
         .then(res => {
           expect(res.body.message).to.equal('Cannot start or end with whitespace');
         });
     });
 
-    it('Should reject users with an invalid email address', function () {
+    it('Should reject users with non-trimmed password', function () {
       return supertest(app)
         .post('/api/users')
-        .send({ first_name, last_name, screen_name, email: '', password })
+        .send({ fullname, username, password: ` ${password}` })
         .expect(400)
         .then(res => {
-          expect(res.body.message).to.equal('Please provide a valid email address');
+          expect(res.body.message).to.equal('Cannot start or end with whitespace');
+        });
+    });
+
+    it('Should reject users with an invalid username address', function () {
+      return supertest(app)
+        .post('/api/users')
+        .send({ fullname, username: '', password })
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).to.equal('Username should be a valid email address');
         });
     });
 
     it('Should reject users with password less than 8 characters', function () {
       return supertest(app)
         .post('/api/users')
-        .send({ first_name, last_name, screen_name, email, password: 'asdfghj' })
+        .send({ fullname, username, password: 'asdfghj' })
         .expect(400)
         .then(res => {
           expect(res.body.message).to.equal('Password must a between 8 and 72 characters');
@@ -146,16 +140,12 @@ describe.skip('Noteful API - Users', function () {
     it('Should reject users with password greater than 72 characters', function () {
       return supertest(app)
         .post('/api/users')
-        .send({ first_name, last_name, screen_name, email, password: new Array(73).fill('a').join('') })
+        .send({ fullname, username, password: new Array(73).fill('a').join('') })
         .expect(400)
         .then(res => {
           expect(res.body.message).to.equal('Password must a between 8 and 72 characters');
         });
     });
-
-    it('Should reject users with duplicate username');
-
-    it('Should trim fullname');
 
   });
 

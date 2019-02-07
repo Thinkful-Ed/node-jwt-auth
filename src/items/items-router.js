@@ -12,7 +12,7 @@ const serialize = item => ({
   id: item.id,
   name: xss(item.name),
   description: xss(item.description),
-  date_published: item.date_published,
+  created_at: item.created_at,
   user_id: item.user_id
 });
 
